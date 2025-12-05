@@ -1,1 +1,0 @@
-# typesctript-to-do-list
