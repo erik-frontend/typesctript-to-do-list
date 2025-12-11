@@ -5,10 +5,7 @@ interface Todo {
 }
 
 const todosEl = document.querySelector<HTMLUListElement>("#todos")!;
-
-
-
-
+// console.log(todosEl);
 
 const START_ARRAY = [
     { id: 1, title: "🤓 Learn about TypeScript", completed: true },
@@ -18,28 +15,34 @@ const START_ARRAY = [
 ]
 
 const jsonTodos = localStorage.getItem("todos");
-// let todos: Todo[] = jsonTodos && jsonTodos !== "[]" ?
-//  JSON.parse( jsonTodos ) 
-//  : START_ARRAY;
+// console.log(jsonTodos);
 
-    let todos: Todo[] = jsonTodos ? JSON.parse(jsonTodos) : []
+let todos: Todo[] = jsonTodos && jsonTodos !== "[]" ?
+    JSON.parse(jsonTodos)
+    : START_ARRAY;
 
- const saveTodos = () => {
+//  console.log(todos);
+
+// let todos: Todo[] = jsonTodos ? JSON.parse(jsonTodos) : []
+
+const saveTodos = () => {
     const jsonTodos = JSON.stringify(todos)
-    localStorage.setItem("todos",jsonTodos)
- }
- const toggleTodo = (id:number) => {
-    todos = todos.map(todo => todo.id === id ? {...todo, completed: !todo.completed} : todo)
+    localStorage.setItem("todos", jsonTodos)
+}
+
+saveTodos()
+
+const toggleTodo = (id: number) => {
+    todos = todos.map(todo => todo.id === id ? { ...todo, completed: !todo.completed } : todo)
 
     saveTodos()
     renderTodos()
- }
+}
 
- saveTodos()
 
- /**
- * Render todos to DOM
- **/
+/**
+* Render todos to DOM
+**/
 // ✔ map() → делает массив - map создаёт список HTML-элементов
 // ✔ join("") → делает строку - join превращает этот список в одну строку
 // ✔ innerHTML её вставляет в DOM
@@ -58,9 +61,41 @@ const renderTodos = () => {
                         ${todo.title}
                     </span>
                 </label>
+                <div class="flex items-center gap-2">
+                    <button class="cursor-pointer edit px-3 py-1 text-sm bg-yellow-500 hover:bg-yellow-600 text-white rounded-md transition">
+                        Edit
+                    </button>
+                    <button data-id="${todo.id
+                }" class="cursor-pointer delete px-3 py-1 text-sm bg-red-600 hover:bg-red-700 text-white rounded-md transition">
+                        Delete
+                    </button>
+                </div>
             </li>`
         }).join("")
-       
+    // search input type checkbox
+    const toggleInputs = document.querySelectorAll<HTMLInputElement>(".toggle")
+    //    console.log(toggleInputs);
+    toggleInputs.forEach(input => {
+        input.addEventListener("change", () => {
+            const id = Number(input.dataset.id)
+            toggleTodo(id)
+            // console.log(id);
+        })
+    })
+
+    const deleteBtn = document.querySelectorAll<HTMLButtonElement>(".delete")
+    console.log(deleteBtn);
+    const deleteTodo = (id:number) => {
+        todos = todos.filter(todo => todo.id !== id)
+        saveTodos()
+        renderTodos()
+    }
+    deleteBtn.forEach(btn => {
+        btn.addEventListener("click", () => {
+            const id = Number(btn.dataset.id)
+            deleteTodo(id)
+        })
+    })
 }
 
 renderTodos()
