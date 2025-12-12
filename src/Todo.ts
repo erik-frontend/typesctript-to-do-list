@@ -20,13 +20,13 @@ const START_ARRAY = [
 const jsonTodos = localStorage.getItem("todos");
 // console.log(jsonTodos);
 
-let todos: Todo[] = jsonTodos && jsonTodos !== "[]" ?
+let todos: Todo[] = jsonTodos ?
     JSON.parse(jsonTodos)
     : START_ARRAY;
 
 //  console.log(todos);
 
-//  let todos: Todo[] = jsonTodos ? JSON.parse(jsonTodos) : []
+// let todos: Todo[] = jsonTodos ? JSON.parse(jsonTodos) : []
 
 const saveTodos = () => {
     const jsonTodos = JSON.stringify(todos)
@@ -40,7 +40,6 @@ const toggleTodo = (id: number) => {
     saveTodos()
     renderTodos()
 }
-saveTodos()
 
 
 /**
