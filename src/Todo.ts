@@ -6,6 +6,9 @@ interface Todo {
 
 const todosEl = document.querySelector<HTMLUListElement>("#todos")!;
 // console.log(todosEl);
+const newTodoTitleEl = document.querySelector<HTMLInputElement>("#new-todo-title")!
+
+const newTodoFormEl = document.querySelector<HTMLFormElement>("#new-todo-form")!
 
 const START_ARRAY = [
     { id: 1, title: "🤓 Learn about TypeScript", completed: true },
@@ -23,14 +26,13 @@ let todos: Todo[] = jsonTodos && jsonTodos !== "[]" ?
 
 //  console.log(todos);
 
-// let todos: Todo[] = jsonTodos ? JSON.parse(jsonTodos) : []
+//  let todos: Todo[] = jsonTodos ? JSON.parse(jsonTodos) : []
 
 const saveTodos = () => {
     const jsonTodos = JSON.stringify(todos)
     localStorage.setItem("todos", jsonTodos)
 }
 
-saveTodos()
 
 const toggleTodo = (id: number) => {
     todos = todos.map(todo => todo.id === id ? { ...todo, completed: !todo.completed } : todo)
@@ -38,6 +40,7 @@ const toggleTodo = (id: number) => {
     saveTodos()
     renderTodos()
 }
+saveTodos()
 
 
 /**
@@ -50,7 +53,7 @@ const toggleTodo = (id: number) => {
 const renderTodos = () => {
     todosEl.innerHTML = todos
         .map((todo) => {
-            return `<li>
+            return `<li class="flex justify-between">
                 <label>
                     <input type="checkbox"
                         ${todo.completed ? "checked" : ""}
@@ -98,4 +101,28 @@ const renderTodos = () => {
     })
 }
 
+const newTodo = (e:SubmitEvent) => {
+    e.preventDefault()
+    const newTodoTitle = newTodoTitleEl.value.trim()
+
+    if(newTodoTitle.length < 3){
+        alert("That is to short todo, length must be more than 3 characters")
+        return 
+    }
+
+    const maxId = Math.max(0, ...todos.map(todo => todo.id))
+    todos.push({
+        id:maxId + 1,
+        title: newTodoTitle,
+        completed: false,
+    })
+    saveTodos()
+    renderTodos()
+    newTodoTitleEl.value = ""
+    console.log("Greate success", todos);
+    
+}
+newTodoFormEl.addEventListener("submit", newTodo)
+// if(todos) renderTodos()
+    // else `<h2>Add something to the list</h2>`
 renderTodos()
