@@ -52,16 +52,21 @@ const toggleTodo = (id: number) => {
 const renderTodos = () => {
     todosEl.innerHTML = todos
         .map((todo) => {
-            return `<li class="flex justify-between">
+            return `<li class="flex justify-between" data-id="${todo.id}">
                 <label>
                     <input type="checkbox"
                         ${todo.completed ? "checked" : ""}
                         data-id="${todo.id}"
                         class="toggle h-5 w-5 cursor-pointer" 
                     />
-                    <span class="${todo.completed ? "line-through text-gray-400" : ""}">
-                        ${todo.title}
-                    </span>
+                    <input 
+                        class="${todo.completed ? "line-through text-gray-400" : ""} todo-title"
+                        value="${todo.title}"
+                        type="text"
+                        data-id="${todo.id}"
+                        name="text"
+                        readOnly
+                    />
                 </label>
                 <div class="flex items-center gap-2">
                     <button class="cursor-pointer edit px-3 py-1 text-sm bg-yellow-500 hover:bg-yellow-600 text-white rounded-md transition">
@@ -86,7 +91,7 @@ const renderTodos = () => {
     })
 
     const deleteBtn = document.querySelectorAll<HTMLButtonElement>(".delete")
-    console.log(deleteBtn);
+    // console.log(deleteBtn);
     const deleteTodo = (id:number) => {
         todos = todos.filter(todo => todo.id !== id)
         saveTodos()
@@ -98,7 +103,52 @@ const renderTodos = () => {
             deleteTodo(id)
         })
     })
-}
+
+    const editBtns = document.querySelectorAll<HTMLButtonElement>(".edit")
+    const saveEditTodo = (newTitle: string, id: number) => {
+        if(newTitle.length < 3 ){
+            alert("Title is to short")
+            return
+        }
+        todos = todos.map(todo => todo.id === id ? {...todo, title: newTitle} : todo)
+        // console.log(id);
+        
+        saveTodos()
+    }
+
+    editBtns.forEach(btn => {
+        btn.addEventListener("click", () => {
+            const li = btn.closest("li")!
+            
+            
+            const id = Number(li.dataset.id)
+// console.log(id);
+            const titleInput = li?.querySelector<HTMLInputElement>(".todo-title")!
+            titleInput.readOnly = false
+            const oldValue = titleInput.value
+            titleInput.focus()
+            titleInput.setSelectionRange(titleInput.value.length, titleInput.value.length)
+
+            const onKey = (e:KeyboardEvent) => {
+                if(e.key === "Enter"){
+                    saveEditTodo(titleInput.value.trim(), id)
+                    titleInput.readOnly = true
+                    titleInput.removeEventListener("keydown", onKey)
+                }
+                if(e.key === "Escape"){
+                    titleInput.value = oldValue
+                    titleInput.readOnly = true
+                    titleInput.removeEventListener("keydown", onKey)
+                    renderTodos()
+                }
+            }
+            titleInput.addEventListener("keydown", onKey)
+            titleInput.addEventListener("blur", () => {
+                saveEditTodo(titleInput.value.trim(), id)
+            }, {once: true})
+        })
+    })
+}   
 
 const newTodo = (e:SubmitEvent) => {
     e.preventDefault()
