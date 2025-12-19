@@ -1,3 +1,6 @@
+import Toastify from 'toastify-js'
+import "toastify-js/src/toastify.css"
+
 interface Todo {
     id: number;
     title: string;
@@ -50,6 +53,14 @@ const toggleTodo = (id: number) => {
 // ✔ innerHTML её вставляет в DOM
 
 const renderTodos = () => {
+    if (todos.length === 0) {
+        todosEl.innerHTML = `
+            <li class="p-4 text-center text-3xl font-bold text-gray-500 italic">
+                Todo List is Empty. Add a new Task
+            </li>
+        `
+        return
+    }
     todosEl.innerHTML = todos
         .map((todo) => {
             return `<li class="flex justify-between" data-id="${todo.id}">
@@ -92,7 +103,7 @@ const renderTodos = () => {
 
     const deleteBtn = document.querySelectorAll<HTMLButtonElement>(".delete")
     // console.log(deleteBtn);
-    const deleteTodo = (id:number) => {
+    const deleteTodo = (id: number) => {
         todos = todos.filter(todo => todo.id !== id)
         saveTodos()
         renderTodos()
@@ -105,63 +116,82 @@ const renderTodos = () => {
     })
 
     const editBtns = document.querySelectorAll<HTMLButtonElement>(".edit")
-    const saveEditTodo = (newTitle: string, id: number) => {
-        if(newTitle.length < 3 ){
-            alert("Title is to short")
-            return
+
+    // Фнкция которая сохраняет измененнный текст
+
+    const saveEditTodo = (newTitle: string, id: number): boolean => {
+        if (newTitle.length < 3) {
+            Toastify({
+                text: "title is to short",
+                duration: 1500,
+                gravity: "top",
+                position: "center",
+                style: {
+                    background: "linear-gradient(to right, #ff5f6d, #ffc371)"
+                }
+            }).showToast()
+            return false
         }
-        todos = todos.map(todo => todo.id === id ? {...todo, title: newTitle} : todo)
+        todos = todos.map(todo => todo.id === id ? { ...todo, title: newTitle } : todo)
         // console.log(id);
-        
+
         saveTodos()
+        return true
     }
 
     editBtns.forEach(btn => {
         btn.addEventListener("click", () => {
             const li = btn.closest("li")!
-            
-            
+
             const id = Number(li.dataset.id)
-// console.log(id);
+            // console.log(id);
             const titleInput = li?.querySelector<HTMLInputElement>(".todo-title")!
             titleInput.readOnly = false
             const oldValue = titleInput.value
             titleInput.focus()
             titleInput.setSelectionRange(titleInput.value.length, titleInput.value.length)
 
-            const onKey = (e:KeyboardEvent) => {
-                if(e.key === "Enter"){
-                    saveEditTodo(titleInput.value.trim(), id)
+            const success = saveEditTodo(titleInput.value.trim(), id)
+
+            const onKey = (e: KeyboardEvent) => {
+                if (e.key === "Enter") {
+                    if (!success) titleInput.value = oldValue
                     titleInput.readOnly = true
                     titleInput.removeEventListener("keydown", onKey)
                 }
-                if(e.key === "Escape"){
+                if (e.key === "Escape") {
                     titleInput.value = oldValue
                     titleInput.readOnly = true
                     titleInput.removeEventListener("keydown", onKey)
                     renderTodos()
                 }
             }
+
+
+
             titleInput.addEventListener("keydown", onKey)
             titleInput.addEventListener("blur", () => {
-                saveEditTodo(titleInput.value.trim(), id)
-            }, {once: true})
+                const success = saveEditTodo(titleInput.value.trim(), id)
+                // console.log(success);
+                if (!success) titleInput.value = oldValue
+                titleInput.readOnly = true
+            }, { once: true })
         })
     })
-}   
+}
 
-const newTodo = (e:SubmitEvent) => {
+const newTodo = (e: SubmitEvent) => {
     e.preventDefault()
     const newTodoTitle = newTodoTitleEl.value.trim()
 
-    if(newTodoTitle.length < 3){
+    if (newTodoTitle.length < 3) {
         alert("That is to short todo, length must be more than 3 characters")
-        return 
+        return
     }
 
     const maxId = Math.max(0, ...todos.map(todo => todo.id))
     todos.push({
-        id:maxId + 1,
+        id: maxId + 1,
         title: newTodoTitle,
         completed: false,
     })
@@ -169,9 +199,17 @@ const newTodo = (e:SubmitEvent) => {
     renderTodos()
     newTodoTitleEl.value = ""
     console.log("Greate success", todos);
-    
+    Toastify({
+        text: "todo successfully created",
+        duration: 1500,
+        gravity: "top",
+        position: "center",
+        style: {
+            background: "linear-gradient(to right, #00b09b, #96c93d)"
+        }
+    }).showToast()
+
 }
 newTodoFormEl.addEventListener("submit", newTodo)
-// if(todos) renderTodos()
-    // else `<h2>Add something to the list</h2>`
+
 renderTodos()
